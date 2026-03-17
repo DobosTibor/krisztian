@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Csapda játék</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+     background-image: url('gepesz.png');
+     background-repeat: no-repeat;
+     background-position: center;
+    background-attachment: fixed;
+     background-size: cover;
+    margin: 0;
+    padding: 0;
+    overflow: hidden; /* Konfetti és véletlen görgetés ellen */
+    touch-action: manipulation; /* Gyorsabb válasz érintésre */
+  }
+  
+  h1 { 
+    margin-top: 20px; 
+    font-size: 1.5rem; /* Adaptív méret */
+  }
+
+  p { font-size: 0.9rem; padding: 0 10px; }
+
+  #grid {
+    display: grid;
+    /* Mobilon a képernyő szélességéhez igazodik (max 300px összesen) */
+    grid-template-columns: repeat(3, min(25vw, 100px));
+    grid-gap: 10px;
+    justify-content: center;
+    margin-top: 20px;
+  }
+
+  .cell {
+    /* Négyzet megtartása a szélesség alapján */
+    aspect-ratio: 1 / 1;
+    background-color: #add8e6;
+    display: flex; 
+    justify-content: center; 
+    align-items: center;
+    cursor: pointer; 
+    border-radius: 10px;
+    transition: transform 0.1s;
+  }
+
+  /* Mobilon ne legyen hover effekt, mert zavaró lehet kattintás után */
+  @media (min-width: 768px) {
+    .cell:hover { transform: scale(1.05); }
+  }
+
+  .cell img { 
+    width: 60%; 
+    height: auto; 
+  }
+
+  #message { 
+    margin-top: 15px; 
+    font-weight: bold; 
+    font-size: 1rem; 
+    min-height: 1.2em;
+    padding: 0 10px;
+  }
+
+  /* --- GYŐZELMI KÉPERNYŐ (OVERLAY) --- */
+  #victory-screen {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background-color: rgba(0, 0, 0, 0.9);
+    display: none;
+    justify-content: center; 
+    align-items: center;
+    z-index: 1000;
+    flex-direction: column;
+  }
+
+  #victory-img {
+    max-width: 70%; /* Mobilon kicsit nagyobb, hogy látszódjon */
+    max-height: 40%;
+    border-radius: 15px;
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+    animation: popIn 0.5s ease-out;
+    z-index: 1010;
+  }
+
+  @keyframes popIn {
+    0% { transform: scale(0.5); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  #victory-screen p:first-of-type {
+    color: white; 
+    font-size: 1.8rem; 
+    font-weight: bold;
+    margin: 20px 0 10px 0;
+    z-index: 1010;
+  }
+
+  /* --- KONFETTI --- */
+  .confetti {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    top: -20px;
+    z-index: 1005;
+    opacity: 0.8;
+    animation: fall linear infinite;
+  }
+
+  @keyframes fall {
+    to { transform: translateY(110vh) rotate(360deg); }
+  }
+
+  /* --- MOBILBARÁT GOMB --- */
+  .szmájli-gomb {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background-color: white;
+    color: #333;
+    border: 1px solid #ccc;
+    padding: 10px 20px;
+    font-size: 1rem;
+    font-weight: bold;
+    border-radius: 50px;
+    cursor: pointer;
+    margin-top: 15px;
+    text-transform: uppercase;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+
+  .ikon-kor {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 25px;
+    height: 25px;
+    border: 2px solid #555;
+    border-radius: 50%;
+    font-size: 18px;
+  }
+</style>
+</head>
+<body>
+
+<h1>Kerüld ki a csapdát!</h1>
+<p>Kattints a képekre, de vigyázz a csapdára!</p>
+
+<div id="grid"></div>
+<div id="message"></div>
+
+<div id="victory-screen" onclick="location.reload()">
+  <div id="confetti-container"></div>
+  <img src="win.png" alt="GYŐZELEM!" id="victory-img">
+  <p>NYERTÉL! 🎉</p>
+  <p style="font-size: 14px; color: #ccc;">(Érintsd meg a képernyőt az újraindításhoz)</p>
+</div>
+
+<script>
+  const grid = document.getElementById('grid');
+  const message = document.getElementById('message');
+  const victoryScreen = document.getElementById('victory-screen');
+  const confettiContainer = document.getElementById('confetti-container');
+
+  let correctClicks = 0;
+  const trapIndex = Math.floor(Math.random() * 9);
+
+  for(let i = 0; i < 9; i++) {
+    const cell = document.createElement('div');
+    cell.classList.add('cell');
+    
+    const img = document.createElement('img');
+    img.src = 'szomoru.png'; 
+    cell.appendChild(img);
+
+    // Click helyett mobilon a 'touchstart' néha gyorsabb, de a 'click' a legbiztonságosabb
+    cell.addEventListener('click', function handleEntry() {
+      if(i === trapIndex) {
+        cell.style.backgroundColor = 'red';
+        message.textContent = 'Csapda! Elbuktál 😵';
+        disableGrid();
+        setTimeout(() => { if(confirm('Vége a játéknak! Újra?')) location.reload(); }, 500);
+      } else {
+        if (cell.style.backgroundColor !== 'green') {
+            cell.style.backgroundColor = 'green';
+            cell.style.pointerEvents = 'none';
+            correctClicks++;
+            message.textContent = `Sikerült! 🎉 (${correctClicks}/8)`;
+            if (correctClicks === 8) showVictory();
+        }
+      }
+    });
+    grid.appendChild(cell);
+  }
+
+  function disableGrid() {
+    document.querySelectorAll('.cell').forEach(c => c.style.pointerEvents = 'none');
+  }
+
+  function showVictory() {
+    disableGrid();
+    createConfetti(40);
+    victoryScreen.style.display = 'flex';
+  }
+
+  function createConfetti(num) {
+    const colors = ['#f2d74e', '#95c3de', '#ff9a91'];
+    for (let i = 0; i < num; i++) {
+      const confetti = document.createElement('div');
+      confetti.classList.add('confetti');
+      confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+      confetti.style.left = Math.random() * 100 + 'vw';
+      confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
+      confetti.style.animationDelay = (Math.random() * 2) + 's';
+      confettiContainer.appendChild(confetti);
+    }
+  }
+</script>
+
+<div style="margin-top: 20px;">
+  <button class="szmájli-gomb" onclick="window.location.href='jatek.html';">
+    Vissza
+    <div class="ikon-kor">☺</div>
+  </button>
+</div>
+
+</body>
+</html>

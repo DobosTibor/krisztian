@@ -1,36 +1,160 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hu">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Krisztián</title>
-    <style>
-        body {
-          background-image: url('gepesz.png');
-          font-family: Arial, Helvetica, sans-serif;
-            background-size: 100%;
-            background-repeat: no-repeat;
-        }
-        h1{
-            color: white;
-            text-shadow: 3px;
-        }
-        .hatter{
-            background-color: aqua;
-            margin-left: 400px;
-            margin-right: 400px;
-        }
-        </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Krisztián</title>
+<style>
+  body {
+    background-image: url('gepesz.png');
+    font-family: Arial, Helvetica, sans-serif;
+    /* Mobilon a 100% szélesség helyett a cover jobb, hogy ne nyúljon meg a kép */
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    margin: 0;
+    padding: 0;
+    background-repeat: no-repeat;
+  }
+
+  h1 {
+    color: white;
+    text-shadow: 2px 2px 4px #000;
+    font-size: 1.5rem; /* Adaptív betűméret */
+  }
+
+  .hatter {
+    background-color: aqua;
+    /* Fix 400px margó helyett százalékos és max-szélesség korlát */
+    margin: 20px auto;
+    width: 90%;
+    max-width: 600px;
+    padding: 10px;
+    text-align: center;
+    border-radius: 10px;
+  }
+
+  /* Kép mobilbaráttá tétele */
+  .fo-kep {
+    width: 90%;
+    max-width: 700px;
+    height: auto;
+    border-radius: 15px;
+    /* Mobilon az onMouseOver helyett érintésre is reagáljon */
+    cursor: pointer;
+  }
+
+  /* Loading overlay */
+  #loading-screen {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background-color: #add8e6;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    flex-direction: column;
+    transition: opacity 0.5s ease;
+  }
+
+  #loading-screen img {
+    width: 80px;
+    height: 80px;
+    animation: spin 1.5s linear infinite;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  #content {
+    display: none;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    padding-bottom: 50px;
+  }
+
+  body.loaded #content {
+    display: block;
+    opacity: 1;
+  }
+
+  body.loaded #loading-screen {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* Gomb mobilbarát stílusa */
+  .szmájli-gomb {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background-color: white;
+    color: #333;
+    border: 1px solid #ccc;
+    padding: 12px 25px;
+    font-size: 1rem;
+    font-weight: bold;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    text-transform: uppercase;
+    margin: 20px 0;
+    text-decoration: none;
+  }
+
+  .ikon-kor {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 25px;
+    height: 25px;
+    border: 2px solid #555;
+    border-radius: 50%;
+  }
+
+  /* Mobilon a gomb ne legyen túl széles */
+  @media (max-width: 480px) {
+    .szmájli-gomb { width: 80%; }
+    h1 { font-size: 1.2rem; }
+  }
+</style>
 </head>
 <body>
+
+  <div id="loading-screen">
+    <img src="par.JPG" alt="Loading...">
+    <p>Töltés...</p>
+  </div>
+
+  <div id="content">
     <center>
-        <div class="hatter">
-    <h1>Tedd vidámmá Krisztiánt</h1>
-</div>
- 
-    <img name="kep" src="szomoru.png" style="width:  700px;"
-    onMouseOver="document.kep.src='vidam.png' "
-    onMouseOut="document.kep.src='szomoru.png' ">
-</center>
+      <div class="hatter">
+        <h1>Tedd vidámmá Krisztiánt</h1>
+      </div>
+      
+      <img id="krisz-kep" class="fo-kep" src="szomoru.png" 
+           onmouseover="this.src='vidam.png'" 
+           onmouseout="this.src='szomoru.png'"
+           onclick="this.src='vidam.png'"> <div style="margin-top: 20px;">
+        <button class="szmájli-gomb" onclick="window.location.href='jatek.html';">
+          Szeretnél játszani?
+          <div class="ikon-kor">☺</div>
+        </button>
+      </div>
+    </center>
+  </div>
+
+  <script>
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        document.body.classList.add('loaded');
+      }, 2000); 
+    });
+  </script>
+
 </body>
 </html>
